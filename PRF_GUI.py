@@ -85,6 +85,7 @@ class PRF_GUI(Gtk.Window):
         Gtk.Window.__init__(self, title="PRF ASCII Analysis")
         self.set_resizable(False)
         self.set_border_width(10)
+        self.settings = Gtk.Settings.get_default()
 
         #Create a grid to store all the objects
         self.grid = Gtk.Grid(column_homogeneous=False, column_spacing=10, row_spacing=10)
@@ -107,6 +108,12 @@ class PRF_GUI(Gtk.Window):
         self.tipTiltBtn = Gtk.CheckButton(label="Remove Tilt")
         self.tipTiltBtn.connect("toggled", self.on_tiptilt_button_clicked)
         self.grid.attach(self.tipTiltBtn, 31, 1, 1, 1)
+
+
+        #Create Theme toggle button
+        self.themeBtn = Gtk.CheckButton(label="Dark-Theme")
+        self.themeBtn.connect("toggled", self.on_themeBtn_button_clicked)
+        self.grid.attach(self.themeBtn, 82, 0, 1, 1)
 
 
         #Create the analysis options and set properties
@@ -220,6 +227,9 @@ class PRF_GUI(Gtk.Window):
                 self.ctrlObj.updateProperties(self.tipTiltBtn.get_active(), self.selectedFilt)
                 self.fig = self.ctrlObj.getFigObj()
                 self.ReplaceFigure(self.fig)
+
+    def on_themeBtn_button_clicked(self, widget):
+        self.settings.set_property("gtk-application-prefer-dark-theme", self.themeBtn.get_active())
 
 
     def on_close_button_clicked(self, widget):
