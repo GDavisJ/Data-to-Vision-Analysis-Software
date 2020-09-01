@@ -1,3 +1,4 @@
+import sys
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, GLib
@@ -9,7 +10,7 @@ from matplotlib.backends.backend_gtk3agg import (
 from matplotlib.figure import Figure
 import numpy as np
 from PRF_Controller import PRF_Controller
-
+sysArg = sys.argv
 
 class NavigationToolbar(NavigationToolbar):
     # only display the buttons we need
@@ -146,7 +147,7 @@ class PRF_GUI(Gtk.Window):
         #Create the clear button and set properties
         self.clearBtn = Gtk.Button(label="Clear")        
         self.clearBtn.set_size_request(50, 20)
-        self.clearBtn.connect("clicked", self.on_close_button_clicked)
+        self.clearBtn.connect("clicked", self.on_clear_button_clicked)
         self.grid.attach(self.clearBtn, 98, 80, 1, 1)
 
 
@@ -169,9 +170,10 @@ class PRF_GUI(Gtk.Window):
         self.vbox.pack_start(toolbar, False, False, 10)
         self.cursor = Cursor()
 
-##        print (sysArg[0])
-##        if len(sysArg) >= 2:
-##            self.sysArgOpen()
+        #Gets system args passed to .exe (for example: someone changes the .asc to open with this script, it will use the arg to open the .asc file).
+        #If .asc file gets double clicked, the file will automatically get loaded and plots created.
+        if len(sysArg) >= 2:
+            self.sysArgOpen()
 
 
     def on_browse_button_clicked(self, widget):
@@ -195,15 +197,21 @@ class PRF_GUI(Gtk.Window):
         
         if response == Gtk.ResponseType.OK:
             if len(dialog.get_filename().split('.asc')) == 2:
-                self.FPath = '\\'.join(dialog.get_filename().split('\\')[:-1])+'\\'
-                self.FName = dialog.get_filename().split('\\')[-1]
-                self.openEntry.set_text(self.FName)
+                try:
+                    self.FPath = '\\'.join(dialog.get_filename().split('\\')[:-1])+'\\'
+                    self.FName = dialog.get_filename().split('\\')[-1]
+                    self.openEntry.set_text(self.FName)
 
-
-                #Open the file and create a new figure
-                self.ctrlObj = PRF_Controller(self.FName, self.FPath, self.selectedAnalysis, self.tipTiltBtn.get_active(), self.selectedFilt)
-                self.fig = self.ctrlObj.getFigObj()
-                self.ReplaceFigure(self.fig)
+                    #Open the file and create a new figure
+                    self.ctrlObj = PRF_Controller(self.FName, self.FPath, self.selectedAnalysis, self.tipTiltBtn.get_active(), self.selectedFilt)
+                    self.fig = self.ctrlObj.getFigObj()
+                    self.ReplaceFigure(self.fig)
+                except:
+                    message  = self.userMessageDialog('File Error', 'The file selected uses the wrong naming convention.', Gtk.MessageType.ERROR)
+                    message.run()
+                    message.destroy()
+                    self.openEntry.set_text("")
+                    dialog.destroy()
                 
         dialog.destroy()
 
@@ -219,12 +227,26 @@ class PRF_GUI(Gtk.Window):
         Gtk.main_quit()
 
 
+    def on_clear_button_clicked(self, widget):
+        self.openEntry.set_text("")
+        self.analysisCombobox.set_active(0)
+        self.filterCombobox.set_active(0)
+        self.tipTiltBtn.set_active(False)
+        for element in self.vbox.get_children():
+            self.vbox.remove(element)
+        self.fig = Figure(figsize=(5, 4), dpi=100)
+        self.canvas = FigureCanvas(self.fig)  # a Gtk.DrawingArea        
+        self.vbox.pack_start(self.canvas, True, True, 0)
+        toolbar = NavigationToolbar(self.canvas, self)
+        self.vbox.pack_start(toolbar, False, False, 10)
+        self.show_all()
+      
+
+
     def on_save_button_clicked(self, widget):
         self.ctrlObj.getFigObj(saveFig=True)
-        message = Gtk.MessageDialog(title='Save', modal=Gtk.DialogFlags.MODAL,
-                                    message_type=Gtk.MessageType.INFO,
-                                    buttons=Gtk.ButtonsType.CLOSE,
-                                    text='Files Successfully Saved!!!')
+        message  = self.userMessageDialog('Save Files', 'Files Successfully Saved!!!',
+                                          Gtk.MessageType.INFO)
         message.run()
         message.destroy()
 
@@ -254,8 +276,6 @@ class PRF_GUI(Gtk.Window):
     def ReplaceFigure(self, fig):
         for element in self.vbox.get_children():
             self.vbox.remove(element)
-
-
         self.canvas = FigureCanvas(self.fig)  # a Gtk.DrawingArea        
         self.vbox.pack_start(self.canvas, True, True, 0)
         toolbar = NavigationToolbar(self.canvas, self)
@@ -264,19 +284,26 @@ class PRF_GUI(Gtk.Window):
         self.fig.canvas.mpl_connect('button_press_event', self.cursor.mouse_Click)
         self.show_all()
 
+
+                
+    #Method used to open a file if an argument is passed to the .exe
     def sysArgOpen(self):
         if len(sysArg[1].split('.asc')) == 2:
                 self.FPath = '\\'.join(sysArg[1].split('\\')[:-1])+'\\'
                 self.FName = sysArg[1].split('\\')[-1]
                 self.openEntry.set_text(self.FName)
-
-
                 #Open the file and create a new figure
                 self.ctrlObj = PRF_Controller(self.FName, self.FPath, self.selectedAnalysis, self.tipTiltBtn.get_active(), self.selectedFilt)
                 self.fig = self.ctrlObj.getFigObj()
                 self.ReplaceFigure(self.fig)
-                
 
+
+    def userMessageDialog(self, messageTitle='', messageText='', messageType=Gtk.MessageType.INFO):
+            message = Gtk.MessageDialog(title=messageTitle, modal=Gtk.DialogFlags.MODAL,
+                                message_type=messageType,
+                                buttons=Gtk.ButtonsType.CLOSE,
+                                text=messageText)
+            return message
 
 win = PRF_GUI()
 win.connect("destroy", Gtk.main_quit)
