@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, GLib
@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 import numpy as np
 from PRF_Controller import PRF_Controller
 sysArg = sys.argv
+
 
 class NavigationToolbar(NavigationToolbar):
     # only display the buttons we need
@@ -40,7 +41,7 @@ class Cursor(object):
 
 
     def mouse_Click(self, event):
-        if not event.inaxes:
+        if not event.inaxes and not event.dblclick:
             return
 
         x, y = event.xdata, event.ydata
@@ -49,7 +50,7 @@ class Cursor(object):
         self.ly.set_xdata(x)
         self.tstObj[self.pltX].clear()
         self.tstObj[self.pltY].clear()
-        profileList = self.coodsList.getProfiles(x, y)
+        profileList = self.coodsList.getProfiles(y, x)
         self.tstObj[self.pltX].plot(profileList[0],profileList[1],color='b')
         self.tstObj[self.pltX].set_title("X Profile", fontsize=24)
         self.tstObj[self.pltX].set_xlabel("X", fontsize=24)
@@ -80,12 +81,20 @@ class PRF_GUI(Gtk.Window):
         self.filtList = ['None','Gaussian Low Pass', 'Gaussian High Pass']
         self.filt_store = Gtk.ListStore(str)
         self.ctrlObj = None
+        self.bgColor = '#FFFFFF'
+        self.readIniFile()
+        self.ascii_ini = []
 
         #Set the main window properties
         Gtk.Window.__init__(self, title="PRF ASCII Analysis")
+        mainHeader = Gtk.HeaderBar()
+        mainHeader.set_show_close_button(True)
+        self.set_titlebar(mainHeader)
         self.set_resizable(False)
         self.set_border_width(10)
         self.settings = Gtk.Settings.get_default()
+        #self.settings.set_property("gtk-theme-name", "Nocturnal-Blue")
+        #self.settings.set_property("gtk-theme-name", "Juno-palenight")
 
         #Create a grid to store all the objects
         self.grid = Gtk.Grid(column_homogeneous=False, column_spacing=10, row_spacing=10)
@@ -114,6 +123,15 @@ class PRF_GUI(Gtk.Window):
         self.themeBtn = Gtk.CheckButton(label="Dark-Theme")
         self.themeBtn.connect("toggled", self.on_themeBtn_button_clicked)
         self.grid.attach(self.themeBtn, 82, 0, 1, 1)
+        self.fig = Figure(figsize=(5, 4), dpi=100)
+        
+        if self.bgColor == '#292929':
+            self.bgColor = '#292929' #Needed just in case someone messes with the config file
+            self.themeBtn.set_active(True)
+        else:
+            self.bgColor = '#FFFFFF'
+            self.themeBtn.set_active(False)
+        self.fig.set_facecolor(self.bgColor)
 
 
         #Create the analysis options and set properties
@@ -168,7 +186,6 @@ class PRF_GUI(Gtk.Window):
 
         #Create an empty matplotlib figure
         self.vbox = Gtk.VBox()
-        self.fig = Figure(figsize=(5, 4), dpi=100)
         self.canvas = FigureCanvas(self.fig)
         self.vbox.pack_start(self.canvas, True, True, 0)
         self.grid.attach(self.vbox, 0, 3, 100, 70) #(Obj, col, row, len, width)
@@ -177,6 +194,7 @@ class PRF_GUI(Gtk.Window):
         self.vbox.pack_start(toolbar, False, False, 10)
         self.cursor = Cursor()
 
+
         #Gets system args passed to .exe (for example: someone changes the .asc to open with this script, it will use the arg to open the .asc file).
         #If .asc file gets double clicked, the file will automatically get loaded and plots created.
         if len(sysArg) >= 2:
@@ -184,8 +202,12 @@ class PRF_GUI(Gtk.Window):
 
 
     def on_browse_button_clicked(self, widget):
+        parent = self.get_toplevel()
+        FCHeader = Gtk.HeaderBar()
+        FCHeader.set_show_close_button(True)
+        
         dialog = Gtk.FileChooserDialog(title="Open..",
-                                       parent=None,
+                                       parent=parent,
                                        action=Gtk.FileChooserAction.OPEN)
         dialog.add_buttons(
             Gtk.STOCK_CANCEL,
@@ -193,6 +215,8 @@ class PRF_GUI(Gtk.Window):
             Gtk.STOCK_OPEN,
             Gtk.ResponseType.OK,
         )
+        dialog.set_titlebar(FCHeader)
+        FCHeader.show()
 
         #Add a filter to only find ASCII files
         filter = Gtk.FileFilter()
@@ -211,25 +235,44 @@ class PRF_GUI(Gtk.Window):
 
                     #Open the file and create a new figure
                     self.ctrlObj = PRF_Controller(self.FName, self.FPath, self.selectedAnalysis, self.tipTiltBtn.get_active(), self.selectedFilt)
-                    self.fig = self.ctrlObj.getFigObj()
+                    self.fig = self.ctrlObj.getFigObj(bgColor=self.bgColor)
                     self.ReplaceFigure(self.fig)
                 except:
                     message  = self.userMessageDialog('File Error', 'The file selected uses the wrong naming convention.', Gtk.MessageType.ERROR)
                     message.run()
                     message.destroy()
                     self.openEntry.set_text("")
-                    dialog.destroy()
-                
         dialog.destroy()
+            
+                
+        
 
     def on_tiptilt_button_clicked(self, widget):
         if self.openEntry.get_text() != '':
                 self.ctrlObj.updateProperties(self.tipTiltBtn.get_active(), self.selectedFilt)
-                self.fig = self.ctrlObj.getFigObj()
+                self.fig = self.ctrlObj.getFigObj(bgColor=self.bgColor)
                 self.ReplaceFigure(self.fig)
 
     def on_themeBtn_button_clicked(self, widget):
         self.settings.set_property("gtk-application-prefer-dark-theme", self.themeBtn.get_active())
+        if self.themeBtn.get_active():
+            self.fig.set_facecolor('#292929')
+            self.bgColor = '#292929'
+            self.saveIniFile()
+            if self.openEntry.get_text() != '':
+                self.fig = self.ctrlObj.getFigObj(bgColor=self.bgColor)
+                self.ReplaceFigure(self.fig)
+            
+        else:
+            self.fig.set_facecolor('#FFFFFF')
+            self.bgColor = '#FFFFFF'
+            self.saveIniFile()
+            if self.openEntry.get_text() != '':
+                self.fig = self.ctrlObj.getFigObj(bgColor=self.bgColor)
+                self.ReplaceFigure(self.fig)
+        self.fig.canvas.draw()
+        
+        
 
 
     def on_close_button_clicked(self, widget):
@@ -254,7 +297,7 @@ class PRF_GUI(Gtk.Window):
 
 
     def on_save_button_clicked(self, widget):
-        self.ctrlObj.getFigObj(saveFig=True)
+        self.ctrlObj.getFigObj(bgColor=self.bgColor, saveFig=True)
         message  = self.userMessageDialog('Save Files', 'Files Successfully Saved!!!',
                                           Gtk.MessageType.INFO)
         message.run()
@@ -268,7 +311,7 @@ class PRF_GUI(Gtk.Window):
             self.selectedAnalysis = model[tree_iter][0]
             if self.openEntry.get_text() != '':
                 self.ctrlObj = PRF_Controller(self.FName, self.FPath, self.selectedAnalysis, self.tipTiltBtn.get_active(), self.selectedFilt)
-                self.fig = self.ctrlObj.getFigObj()
+                self.fig = self.ctrlObj.getFigObj(bgColor=self.bgColor)
                 self.ReplaceFigure(self.fig)
                 
 
@@ -279,7 +322,7 @@ class PRF_GUI(Gtk.Window):
             self.selectedFilt = model[tree_iter][0]
             if self.openEntry.get_text() != '':
                 self.ctrlObj.updateProperties(self.tipTiltBtn.get_active(), self.selectedFilt)
-                self.fig = self.ctrlObj.getFigObj()
+                self.fig = self.ctrlObj.getFigObj(bgColor=self.bgColor)
                 self.ReplaceFigure(self.fig)
             
     #Method used to remove all the children from the vbox so we can fill it with new objects
@@ -309,11 +352,31 @@ class PRF_GUI(Gtk.Window):
 
 
     def userMessageDialog(self, messageTitle='', messageText='', messageType=Gtk.MessageType.INFO):
-            message = Gtk.MessageDialog(title=messageTitle, modal=Gtk.DialogFlags.MODAL,
-                                message_type=messageType,
-                                buttons=Gtk.ButtonsType.CLOSE,
-                                text=messageText)
-            return message
+        parent = self.get_toplevel()
+        MessHeader = Gtk.HeaderBar()
+        MessHeader.set_show_close_button(True)
+        message = Gtk.MessageDialog(parent=parent, title=messageTitle,
+                                    modal=Gtk.DialogFlags.MODAL,
+                                    message_type=messageType,
+                                    buttons=Gtk.ButtonsType.CLOSE,
+                                    text=messageText)
+        message.set_titlebar(MessHeader)
+        message.show_all()
+        return message
+
+    def readIniFile(self):
+        openIni = os.path.join(os.path.dirname(__file__), 'ASCII.ini')
+        file = open(openIni, "r")
+        self.ascii_ini = file.readlines()
+        file.close()
+        self.bgColor = str(self.ascii_ini[0].split('=')[1]).strip()
+
+    def saveIniFile(self):
+        saveIni = os.path.join(os.path.dirname(__file__), 'ASCII.ini')
+        file = open(saveIni, "w")
+        file.write('bgColor='+self.bgColor)
+        file.close()
+
 
 win = PRF_GUI()
 win.connect("destroy", Gtk.main_quit)

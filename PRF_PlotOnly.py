@@ -34,8 +34,11 @@ class PRF_Plot(object):
                 self.YV = []
                 self.filtType = filtType
                 self.LMS_Fit = LMS_Fit
+                self.crossX = 0.0
+                self.crossY = 0.0
                 
                 self.Process_ASCII_File()
+                
 
 
                 
@@ -83,6 +86,8 @@ class PRF_Plot(object):
                 self.Meas_Pix = self.Camera_Pix_Size/float(self.Mag_Val)
                 self.X_Array = np.linspace(0,639*self.Meas_Pix,640)
                 self.Y_Array = np.linspace(0,479*self.Meas_Pix,480)
+                self.crossX = self.X_Array[int(len(self.X_Array)/2)]
+                self.crossY = self.Y_Array[int(len(self.Y_Array)/2)]
 
 
                 #Change the rows to columns (the incoming orientation is wrong)
@@ -154,10 +159,17 @@ class PRF_Plot(object):
 
 
         #Gets the figure object and saves if needed################################################################################################################################################
-        def getFigObj(self, saveFig=False):
+        def getFigObj(self, bgColor, saveFig=False):
                 plt.close("all")
+                if bgColor == '#292929':
+                        plt.style.use('dark_background')
+                else :
+                        plt.style.use('default')
+
+        
                 #Create the figure and grid for the ojects
                 fig2 = plt.figure(constrained_layout=True)
+                fig2.set_facecolor(bgColor)
                 spec2 = gridspec.GridSpec(ncols=2, nrows=2, figure=fig2)
                 f2_ax1 = fig2.add_subplot(spec2[0, 0])
                 #f2_ax2 = fig2.add_subplot(spec2[0, 1], projection='3d')
@@ -176,27 +188,32 @@ class PRF_Plot(object):
                 
 
                 #X profile Creation
-                f2_ax3.plot(self.X_Array, self.ModArr [240], 'b')
+                f2_ax3.plot(self.X_Array, self.ModArr[int(float(self.crossX)/self.Meas_Pix)], 'b')
                 f2_ax3.set_title("X Profile", fontsize=24)
                 f2_ax3.set_xlabel("X", fontsize=24)
                 f2_ax3.set_ylabel("Z", fontsize=24)
+                f2_ax3.set_facecolor(bgColor)
 
 
 
                 #Y profile Creation
-                f2_ax4.plot(self.Y_Array, self.ModArr [:,320], 'r')
+                f2_ax4.plot(self.Y_Array, self.ModArr[:,int(float(self.crossY)/self.Meas_Pix)], 'r')
                 f2_ax4.set_title("Y Profile", fontsize=24)
                 f2_ax4.set_xlabel("Y", fontsize=24)
                 f2_ax4.set_ylabel("Z", fontsize=24)
+                f2_ax4.set_facecolor(bgColor)
+
+
+                
 
 
                 if saveFig == True:
-                        f2_ax1.plot(self.X_Array, np.full((640), self.Y_Array[240], dtype=int), 'b', linewidth=2., label="X Profile")
-                        f2_ax1.plot(np.full((480), self.X_Array[320], dtype=int), self.Y_Array, 'r', linewidth=2., label="Y Profile")
+                        f2_ax1.plot(self.X_Array, np.full((640), self.crossX, dtype=int), 'b', linewidth=2., label="X Profile")
+                        f2_ax1.plot(np.full((480), self.crossY, dtype=int), self.Y_Array, 'r', linewidth=2., label="Y Profile")
                         SavePlot = self.FPath + self.NFName + "_Image.png"
                         plt.suptitle(self.PlotTitle, fontsize=32)
                         fig2.set_size_inches(32,18)
-                        plt.savefig(SavePlot, bbox_inches='tight')
+                        plt.savefig(SavePlot, bbox_inches='tight', facecolor=bgColor)
 
                 else:
                         plt.suptitle(self.PlotTitle, fontsize=20)
@@ -206,8 +223,9 @@ class PRF_Plot(object):
 
         #Gets the updated profiles based on the crosshair clicks#########################################################################################################################################
         def getUpdatedProfile(self, xVal, yVal):
-                
-                return [self.X_Array, self.ModArr[int(float(yVal)/self.Meas_Pix)], self.Y_Array, self.ModArr[:,int(float(xVal)/self.Meas_Pix)]]
+                self.crossX = xVal
+                self.crossY = yVal
+                return [self.X_Array, self.ModArr[int(float(xVal)/self.Meas_Pix)], self.Y_Array, self.ModArr[:,int(float(yVal)/self.Meas_Pix)]]
 
 
         #Sort the data by height and fill with something################################################################################################################################################

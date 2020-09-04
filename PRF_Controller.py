@@ -16,8 +16,8 @@ class PRF_Controller(object):
         elif self.selectedAnalysis == 'Roughness':
             self.analyObj = PRF_ROUGHNESS(self.FName, self.FPath, self.tipTilt, self.selectedFilt)
 
-    def getFigObj(self, saveFig=False):
-        return self.analyObj.getFigObj(saveFig)
+    def getFigObj(self, bgColor='#FFFFFF', saveFig=False):
+        return self.analyObj.getFigObj(bgColor, saveFig)
 
     def getProfiles(self, xval, yval):
         return self.analyObj.getUpdatedProfile(xval, yval)
