@@ -173,6 +173,7 @@ class PRF_Plot(object):
                 fig2.set_facecolor(bgColor)
                 spec2 = gridspec.GridSpec(ncols=2, nrows=2, figure=fig2)
                 f2_ax1 = fig2.add_subplot(spec2[0, 0])
+                f2_ax2 = fig2.add_subplot(spec2[1, 0])
                 #f2_ax2 = fig2.add_subplot(spec2[0, 1], projection='3d')
                 f2_ax3 = fig2.add_subplot(spec2[0, 1])
                 f2_ax4 = fig2.add_subplot(spec2[1, 1])
@@ -209,7 +210,15 @@ class PRF_Plot(object):
                 f2_ax4.set_facecolor(bgColor)
 
 
-                
+
+                #Histogram Plot
+                mask =~np.isnan(self.ModArr)
+                f2_ax2.set_title('Histogram', fontsize=plotFontSize)
+                f2_ax2.set_ylabel('Pts', fontsize=plotFontSize)
+                f2_ax2.set_xlabel('Height', fontsize=plotFontSize)
+                counts, bins = np.histogram(self.ModArr[mask], bins=200)
+                f2_ax2.hist(bins[:-1], bins, weights=counts)
+                f2_ax2.set_facecolor(bgColor)
 
 
                 if saveFig == True:
@@ -229,6 +238,9 @@ class PRF_Plot(object):
                         f2_ax4.set_title("Y Profile", fontsize=plotFontSize)
                         f2_ax4.set_xlabel("Y", fontsize=plotFontSize)
                         f2_ax4.set_ylabel("Z", fontsize=plotFontSize)
+                        f2_ax2.set_title('Histogram', fontsize=plotFontSize)
+                        f2_ax2.set_ylabel('Pts', fontsize=plotFontSize)
+                        f2_ax2.set_xlabel('Height', fontsize=plotFontSize)
 
                         
                         SavePlot = self.FPath + self.NFName + "_Image.png"
