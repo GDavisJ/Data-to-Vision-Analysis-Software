@@ -52,14 +52,14 @@ class Cursor(object):
         self.tstObj[self.pltY].clear()
         profileList = self.coodsList.getProfiles(y, x)
         self.tstObj[self.pltX].plot(profileList[0],profileList[1],color='b')
-        self.tstObj[self.pltX].set_title("X Profile", fontsize=24)
-        self.tstObj[self.pltX].set_xlabel("X", fontsize=24)
-        self.tstObj[self.pltX].set_ylabel("Z", fontsize=24)
+        self.tstObj[self.pltX].set_title("X Profile", fontsize=12)
+        self.tstObj[self.pltX].set_xlabel("X", fontsize=12)
+        self.tstObj[self.pltX].set_ylabel("Z", fontsize=12)
                 
         self.tstObj[self.pltY].plot(profileList[2],profileList[3],color='r')
-        self.tstObj[self.pltY].set_title("Y Profile", fontsize=24)
-        self.tstObj[self.pltY].set_xlabel("Y", fontsize=24)
-        self.tstObj[self.pltY].set_ylabel("Z", fontsize=24)
+        self.tstObj[self.pltY].set_title("Y Profile", fontsize=12)
+        self.tstObj[self.pltY].set_xlabel("Y", fontsize=12)
+        self.tstObj[self.pltY].set_ylabel("Z", fontsize=12)
 
         
         self.ax.figure.canvas.draw()

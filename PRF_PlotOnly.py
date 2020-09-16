@@ -86,8 +86,8 @@ class PRF_Plot(object):
                 self.Meas_Pix = self.Camera_Pix_Size/float(self.Mag_Val)
                 self.X_Array = np.linspace(0,639*self.Meas_Pix,640)
                 self.Y_Array = np.linspace(0,479*self.Meas_Pix,480)
-                self.crossX = self.X_Array[int(len(self.X_Array)/2)]
-                self.crossY = self.Y_Array[int(len(self.Y_Array)/2)]
+                self.crossX = self.Y_Array[int(len(self.Y_Array)/2)]
+                self.crossY = self.X_Array[int(len(self.X_Array)/2)]
 
 
                 #Change the rows to columns (the incoming orientation is wrong)
@@ -165,6 +165,7 @@ class PRF_Plot(object):
                         plt.style.use('dark_background')
                 else :
                         plt.style.use('default')
+                plotFontSize = 12
 
         
                 #Create the figure and grid for the ojects
@@ -181,26 +182,30 @@ class PRF_Plot(object):
                 f2_ax1.set_aspect('equal', adjustable='box')
                 contourf_ = f2_ax1.contourf(self.X_Array, self.Y_Array, self.ModArr , 60, cmap=plt.get_cmap('jet'))#, cmap=plt.cm.mpl)
                 fig2.colorbar(contourf_, format='%.4f', ax=f2_ax1)
-                f2_ax1.set_title("Contour", fontsize=24)
-                f2_ax1.set_xlabel("X", fontsize=24)
-                f2_ax1.set_ylabel("Y", fontsize=24)
+                f2_ax1.set_title("Contour", fontsize=plotFontSize)
+                f2_ax1.set_xlabel("X", fontsize=plotFontSize)
+                f2_ax1.set_ylabel("Y", fontsize=plotFontSize)
+                txtPos = self.X_Array[-1]*-1.16239
+                f2_ax1.text(txtPos, int(479*self.Meas_Pix), 'Total Mag:  ' + str(round(self.Mag_Val,1))+"x",fontsize=12)
+                f2_ax1.text(txtPos, int(420*self.Meas_Pix), 'Pixel Size: ' + str(round(self.Meas_Pix,4))+"um",fontsize=12)
+
                 
                 
 
                 #X profile Creation
                 f2_ax3.plot(self.X_Array, self.ModArr[int(float(self.crossX)/self.Meas_Pix)], 'b')
-                f2_ax3.set_title("X Profile", fontsize=24)
-                f2_ax3.set_xlabel("X", fontsize=24)
-                f2_ax3.set_ylabel("Z", fontsize=24)
+                f2_ax3.set_title("X Profile", fontsize=plotFontSize)
+                f2_ax3.set_xlabel("X", fontsize=plotFontSize)
+                f2_ax3.set_ylabel("Z", fontsize=plotFontSize)
                 f2_ax3.set_facecolor(bgColor)
 
 
 
                 #Y profile Creation
                 f2_ax4.plot(self.Y_Array, self.ModArr[:,int(float(self.crossY)/self.Meas_Pix)], 'r')
-                f2_ax4.set_title("Y Profile", fontsize=24)
-                f2_ax4.set_xlabel("Y", fontsize=24)
-                f2_ax4.set_ylabel("Z", fontsize=24)
+                f2_ax4.set_title("Y Profile", fontsize=plotFontSize)
+                f2_ax4.set_xlabel("Y", fontsize=plotFontSize)
+                f2_ax4.set_ylabel("Z", fontsize=plotFontSize)
                 f2_ax4.set_facecolor(bgColor)
 
 
@@ -210,6 +215,22 @@ class PRF_Plot(object):
                 if saveFig == True:
                         f2_ax1.plot(self.X_Array, np.full((640), self.crossX, dtype=int), 'b', linewidth=2., label="X Profile")
                         f2_ax1.plot(np.full((480), self.crossY, dtype=int), self.Y_Array, 'r', linewidth=2., label="Y Profile")
+                        for txt in f2_ax1.texts:
+                                txt.set_visible(False)
+
+                        #Change label size to look better in output image
+                        plotFontSize = 24
+                        f2_ax1.set_title("Contour", fontsize=plotFontSize)
+                        f2_ax1.set_xlabel("X", fontsize=plotFontSize)
+                        f2_ax1.set_ylabel("Y", fontsize=plotFontSize)
+                        f2_ax3.set_title("X Profile", fontsize=plotFontSize)
+                        f2_ax3.set_xlabel("X", fontsize=plotFontSize)
+                        f2_ax3.set_ylabel("Z", fontsize=plotFontSize)
+                        f2_ax4.set_title("Y Profile", fontsize=plotFontSize)
+                        f2_ax4.set_xlabel("Y", fontsize=plotFontSize)
+                        f2_ax4.set_ylabel("Z", fontsize=plotFontSize)
+
+                        
                         SavePlot = self.FPath + self.NFName + "_Image.png"
                         plt.suptitle(self.PlotTitle, fontsize=32)
                         fig2.set_size_inches(32,18)
