@@ -76,7 +76,7 @@ class PRF_GUI(Gtk.Window):
         self.FName = ''
         self.selectedAnalysis = ''
         self.selectedFilt = ''
-        self.analysisList = ['Plot Only','Roughness']
+        self.analysisList = ['Plot Only','Pad','Roughness','Via']
         self.analysis_store = Gtk.ListStore(str)
         self.filtList = ['None','Gaussian Low Pass', 'Gaussian High Pass']
         self.filt_store = Gtk.ListStore(str)
