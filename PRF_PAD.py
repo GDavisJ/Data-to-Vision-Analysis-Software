@@ -395,8 +395,8 @@ class PRF_PAD(object):
                 txtPos = self.X_Array[-1]*-1.16239
                 f2_ax1.text(txtPos, int(479*self.Meas_Pix), 'Total Mag:    ' + str(round(self.Mag_Val,1))+"x",fontsize=12)
                 f2_ax1.text(txtPos, int(420*self.Meas_Pix), 'Pixel Size:   ' + str(round(self.Meas_Pix,4))+"um",fontsize=12)
-                f2_ax1.text(txtPos, int(340*self.Meas_Pix), 'Top Diam:   ' + str(round(self.topDiam,4))+"um",fontsize=12)
-                f2_ax1.text(txtPos, int(280*self.Meas_Pix), 'Bot Diam:   ' + str(round(self.botDiam,4))+"um",fontsize=12)
+                f2_ax1.text(txtPos, int(340*self.Meas_Pix), 'Top Diam:   ' + str(round(self.botDiam,4))+"um",fontsize=12)
+                f2_ax1.text(txtPos, int(280*self.Meas_Pix), 'Bot Diam:   ' + str(round(self.topDiam,4))+"um",fontsize=12)
                 f2_ax1.text(txtPos, int(220*self.Meas_Pix), 'Depth:        ' + str(round(self.viaDepth,4))+"um",fontsize=12)
 ##                f2_ax1.text(txtPos, int(160*self.Meas_Pix), 'Rsk:        ' + str(round(self.Rsk,4)),fontsize=12)
 
