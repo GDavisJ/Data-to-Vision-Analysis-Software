@@ -1,3 +1,11 @@
+"""
+Module Name: PRF_PlotOnly
+Project: Data-to-Vision
+Owner: Gary Davis
+Class Description: This class is used to create plots for the dataset.
+        These plots will be returned to the view and displayed on the GUI.
+"""
+
 import  csv, datetime, time
 import numpy as np
 import numpy.ma as ma
@@ -106,7 +114,7 @@ class PRF_Plot(object):
                 self.updateData()
                 
 
-
+        #Method used to remove the tilt from the dataset.
         def tipTiltRemove(self):
                 if self.LMS_Fit == True:
                         ZV = np.array(self.ModArr).reshape(np.array(self.ModArr).size).tolist()
@@ -123,7 +131,7 @@ class PRF_Plot(object):
                         self.ModArr = self.ModArr - np.nanmean(self.ModArr)
 
 
-
+        #Method used to process the data using a Gaussian Filter
         def GausFilt(self):
                 
                 if self.filtType == 'Gaussian Low Pass':
@@ -142,7 +150,7 @@ class PRF_Plot(object):
                 self.LMS_Fit = LMS_Fit
                 self.updateData()
                 
-
+        #used to update the data based on user input.
         def updateData(self):
                 self.ModArr = np.array(self.DataArr)
                 self.tipTiltRemove()

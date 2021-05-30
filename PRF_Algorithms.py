@@ -1,3 +1,11 @@
+"""
+Module Name: PRF_Algorithms
+Project: Data-to-Vision
+Owner: Gary Davis
+Class Description: This class contains the algorithms used by the analysis classes.
+        It contains algos for LMS circular fit, LMS Plane fit, filter, etc.
+"""
+
 import  csv
 import numpy as np
 import numpy.ma as ma

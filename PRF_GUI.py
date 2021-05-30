@@ -1,3 +1,10 @@
+"""
+Module Name: PRF_GUI
+Project: Data-to-Vision
+Owner: Gary Davis
+Class Description: This class is used to create the application GUI.
+"""
+
 import sys, os
 import gi
 gi.require_version('Gtk', '3.0')
@@ -18,7 +25,7 @@ class NavigationToolbar(NavigationToolbar):
     toolitems = [t for t in NavigationToolbar.toolitems if
                  t[0] in ('Home', 'Pan', 'Zoom', 'Save')]
 
-
+#This class is used to change the vert and horiz lines on the contour plot and change the x/y profile plots.
 class Cursor(object):
     def __init__(self):
         self.ax = ''
@@ -40,6 +47,7 @@ class Cursor(object):
             self.pltY=3
 
 
+    #Mouse event data is used to get the plot x/y location.
     def mouse_Click(self, event):
         if not event.inaxes and not event.dblclick:
             return
@@ -200,7 +208,7 @@ class PRF_GUI(Gtk.Window):
         if len(sysArg) >= 2:
             self.sysArgOpen()
 
-
+    #Browse button used to open file chooser dialog and filter files so only .asc files are displayed. 
     def on_browse_button_clicked(self, widget):
         parent = self.get_toplevel()
         FCHeader = Gtk.HeaderBar()
@@ -246,13 +254,14 @@ class PRF_GUI(Gtk.Window):
             
                 
         
-
+    #Tilt button event for data tilt removal (LMS plane fit and normalization).
     def on_tiptilt_button_clicked(self, widget):
         if self.openEntry.get_text() != '':
                 self.ctrlObj.updateProperties(self.tipTiltBtn.get_active(), self.selectedFilt)
                 self.fig = self.ctrlObj.getFigObj(bgColor=self.bgColor)
                 self.ReplaceFigure(self.fig)
 
+    #Theme button event to change application theme and save the results to a config file.
     def on_themeBtn_button_clicked(self, widget):
         self.settings.set_property("gtk-application-prefer-dark-theme", self.themeBtn.get_active())
         if self.themeBtn.get_active():
@@ -274,12 +283,12 @@ class PRF_GUI(Gtk.Window):
         
         
 
-
+    #Close button event to close/ destroy the application.
     def on_close_button_clicked(self, widget):
         Gtk.Window.destroy(self)
         Gtk.main_quit()
 
-
+    #Clear button event used to set the GUI back to default conditions.
     def on_clear_button_clicked(self, widget):
         self.openEntry.set_text("")
         self.analysisCombobox.set_active(0)
@@ -295,7 +304,7 @@ class PRF_GUI(Gtk.Window):
         self.show_all()
       
 
-
+    #Save button event used to save plots and data.
     def on_save_button_clicked(self, widget):
         self.ctrlObj.getFigObj(bgColor=self.bgColor, saveFig=True)
         message  = self.userMessageDialog('Save Files', 'Files Successfully Saved!!!',
@@ -304,6 +313,7 @@ class PRF_GUI(Gtk.Window):
         message.destroy()
 
 
+    #Combobox event to change the analysis type (Example: Change PlotOnly to Roughness)
     def on_analysisCombobox_changed(self, combo):
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
@@ -314,7 +324,7 @@ class PRF_GUI(Gtk.Window):
                 self.fig = self.ctrlObj.getFigObj(bgColor=self.bgColor)
                 self.ReplaceFigure(self.fig)
                 
-
+    #Filter combobox event used to add a filter to the data. The information gets passed to the analysis object to get updated.
     def on_filtCombobox_changed(self, combo):
         tree_iter = combo.get_active_iter()
         if tree_iter is not None:
@@ -350,7 +360,7 @@ class PRF_GUI(Gtk.Window):
                 self.fig = self.ctrlObj.getFigObj()
                 self.ReplaceFigure(self.fig)
 
-
+    #Method used to display a message to the user.
     def userMessageDialog(self, messageTitle='', messageText='', messageType=Gtk.MessageType.INFO):
         parent = self.get_toplevel()
         MessHeader = Gtk.HeaderBar()
@@ -364,6 +374,7 @@ class PRF_GUI(Gtk.Window):
         message.show_all()
         return message
 
+    #Method used to read the config file contents
     def readIniFile(self):
         openIni = os.path.join(os.path.dirname(__file__), 'ASCII.ini')
         file = open(openIni, "r")
@@ -371,6 +382,7 @@ class PRF_GUI(Gtk.Window):
         file.close()
         self.bgColor = str(self.ascii_ini[0].split('=')[1]).strip()
 
+    #Method used to save config file
     def saveIniFile(self):
         saveIni = os.path.join(os.path.dirname(__file__), 'ASCII.ini')
         file = open(saveIni, "w")

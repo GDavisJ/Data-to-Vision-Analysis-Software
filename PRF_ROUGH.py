@@ -1,3 +1,11 @@
+"""
+Module Name: PRF_ROUGH
+Project: Data-to-Vision
+Owner: Gary Davis
+Class Description: This class is used to analyze roughness data.
+        Multiple roughness parameters will be reported such as Ra, Rv, Rp, Rt, Rq, etc.
+"""
+
 import time, datetime, csv, stat, os, os.path, socket, \
        sys, shutil, distutils.dir_util, distutils.file_util
 import numpy as np
@@ -142,7 +150,7 @@ class PRF_ROUGHNESS(object):
 
 
 
-
+        #Method used to remove the tilt from the dataset.
         def tipTiltRemove(self):
                 if self.LMS_Fit == True:
                         ZV = np.array(self.ModArr).reshape(np.array(self.ModArr).size).tolist()
@@ -158,7 +166,7 @@ class PRF_ROUGHNESS(object):
                 elif self.LMS_Fit == False:
                         self.ModArr = self.ModArr - np.nanmean(self.ModArr)
 
-
+        #Method used to process the data using a Gaussian Filter
         def GausFilt(self):
                 
                 if self.filtType == 'Gaussian Low Pass':
@@ -177,7 +185,7 @@ class PRF_ROUGHNESS(object):
                 self.LMS_Fit = LMS_Fit
                 self.updateData()
                 
-
+        #used to update the data based on user input.
         def updateData(self):
                 self.ModArr = np.array(self.DataArr)
                 self.tipTiltRemove()

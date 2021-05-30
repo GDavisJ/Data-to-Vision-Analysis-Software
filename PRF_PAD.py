@@ -1,3 +1,12 @@
+"""
+Module Name: PRF_PAD
+Project: Data-to-Vision
+Owner: Gary Davis
+Class Description: This class is used to analyze pad data.
+        A LMS circular fit will be completed on the pad top and bottom.
+        The diameters and depth will be reported.
+"""
+
 import time, datetime, csv, stat, os, os.path, socket, \
        sys, shutil, distutils.dir_util, distutils.file_util
 import numpy as np
@@ -129,7 +138,7 @@ class PRF_PAD(object):
 
 
 
-
+        #Method used to remove the tilt from the dataset.
         def tipTiltRemove(self):
                 if self.LMS_Fit == True:
                         ZV = np.array(self.ModArr).reshape(np.array(self.ModArr).size).tolist()
@@ -145,7 +154,7 @@ class PRF_PAD(object):
                 elif self.LMS_Fit == False:
                         self.ModArr = self.ModArr - np.nanmean(self.ModArr)
 
-
+        #Method used to process the data using a Gaussian Filter
         def GausFilt(self):
                 
                 if self.filtType == 'Gaussian Low Pass':
@@ -158,13 +167,12 @@ class PRF_PAD(object):
                         self.ModArr = self.ModArr - LowPass
 
 
-
         def analysisChange(self, LMS_Fit=False, filtType='None'):
                 self.filtType = filtType
                 self.LMS_Fit = LMS_Fit
                 self.updateData()
                 
-
+        #used to update the data based on user input.
         def updateData(self):
                 self.ModArr = np.array(self.DataArr)
                 self.tipTiltRemove()
@@ -175,11 +183,10 @@ class PRF_PAD(object):
 
 
 
-        #Open and Process Via ASCII File################################################################################################################################################
-
+        #Process the data and complete the pad analysis
         def padAnalysis(self):
                 #Define the Top Threshold and Average top surface
-##                self.ModArr = self.interpNaN(self.ModArr*-1)
+                #self.ModArr = self.interpNaN(self.ModArr*-1)
                 ZV = np.array(self.ModArr).reshape(np.array(self.ModArr).size).tolist()
                 mask =~np.isnan(ZV)
                 if len(np.array(self.XV)[mask]) < 307200:
@@ -282,7 +289,7 @@ class PRF_PAD(object):
                 BotMask =~np.isnan(TempBot)
                 BotHist = np.histogram(TempBot[BotMask], bins=800)
 
-                #A histogram is used to find the frequency distrobution. The signal is noisy so a smoothing algorithm is used to find transitions.
+                #A histogram is used to find the frequency distribution. The signal is noisy so a smoothing algorithm is used to find transitions.
                 yhat_x = np.array(BotHist[1]).reshape(np.array(BotHist[1]).size).tolist()
                 yhat = PRF_Algo().savitzky_golay(np.array(np.array(BotHist[0]).reshape(np.array(BotHist[0]).size).tolist()).astype('float'), 25, 6) # window size 51, polynomial order 3
                 MaximaListBins = np.array(yhat)[argrelextrema(np.array(yhat), np.greater,order=6)[0]]

@@ -1,3 +1,12 @@
+"""
+Module Name: PRF_VIA
+Project: Data-to-Vision
+Owner: Gary Davis
+Class Description: This class is used to analyze via data.
+        A LMS circular fit will be completed on the via top and bottom.
+        The diameters and depth will be reported.
+"""
+
 import time, datetime, csv, stat, os, os.path, socket, \
        sys, shutil, distutils.dir_util, distutils.file_util
 import numpy as np
@@ -127,7 +136,7 @@ class PRF_VIA(object):
 
 
 
-
+        #Method used to remove the tilt from the dataset.
         def tipTiltRemove(self):
                 if self.LMS_Fit == True:
                         ZV = np.array(self.ModArr).reshape(np.array(self.ModArr).size).tolist()
@@ -143,7 +152,7 @@ class PRF_VIA(object):
                 elif self.LMS_Fit == False:
                         self.ModArr = self.ModArr - np.nanmean(self.ModArr)
 
-
+        #Method used to process the data using a Gaussian Filter
         def GausFilt(self):
                 
                 if self.filtType == 'Gaussian Low Pass':
@@ -162,7 +171,7 @@ class PRF_VIA(object):
                 self.LMS_Fit = LMS_Fit
                 self.updateData()
                 
-
+        #used to update the data based on user input.
         def updateData(self):
                 self.ModArr = np.array(self.DataArr)
                 self.tipTiltRemove()
@@ -173,8 +182,7 @@ class PRF_VIA(object):
 
 
 
-        #Open and Process Via ASCII File################################################################################################################################################
-
+        #Process the data and complete the via analysis
         def viaAnalysis(self):
                 #Define the Top Threshold and Average top surface
                 self.ModArr = self.interpNaN(self.ModArr)
@@ -272,7 +280,7 @@ class PRF_VIA(object):
                 BotMask =~np.isnan(TempBot)
                 BotHist = np.histogram(TempBot[BotMask], bins=800)
 
-                #A histogram is used to find the frequency distrobution. The signal is noisy so a smoothing algorithm is used to find transitions.
+                #A histogram is used to find the frequency distribution. The signal is noisy so a smoothing algorithm is used to find transitions.
                 yhat_x = np.array(BotHist[1]).reshape(np.array(BotHist[1]).size).tolist()
                 yhat = PRF_Algo().savitzky_golay(np.array(np.array(BotHist[0]).reshape(np.array(BotHist[0]).size).tolist()).astype('float'), 25, 6) # window size 51, polynomial order 3
                 MaximaListBins = np.array(yhat)[argrelextrema(np.array(yhat), np.greater,order=6)[0]]
@@ -342,14 +350,6 @@ class PRF_VIA(object):
                                 fillComplete = True
 
                 self.Offset = np.sqrt(np.square(float(self.topCircle[0])-float(self.botCircle[0]))+np.square(float(self.topCircle[1])-float(self.botCircle[1])))
-
-
-
-
-
-
-
-                
 
 
                 
